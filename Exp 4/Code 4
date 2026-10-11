@@ -1,0 +1,72 @@
+Code for Experiment 4 IIR Comparitive Analysis
+
+clear; clc; close all;
+
+%% 1. Design Parameters
+Fs = 1000; Fp = 100; Fst = 150; Rp = 1; Rs = 40;
+Wp = Fp / (Fs/2); Wst = Fst / (Fs/2);
+
+%% 2. Filter Designs (Butterworth, Chebyshev-I, Elliptic)
+[Nb, Wb] = buttord(Wp, Wst, Rp, Rs);  [bB, aB] = butter(Nb, Wb, 'low');
+[Nc, Wc] = cheb1ord(Wp, Wst, Rp, Rs);  [bC, aC] = cheby1(Nc, Rp, Wc, 'low');
+[Ne, We] = ellipord(Wp, Wst, Rp, Rs);  [bE, aE] = ellip(Ne, Rp, Rs, We, 'low');
+
+%% 3. Command Window Summary
+fprintf('=== IIR FILTER COMPARATIVE ANALYSIS ===\n');
+fprintf('Filter Orders -> Butterworth: %d | Chebyshev-I: %d | Elliptic: %d\n\n', Nb, Nc, Ne);
+
+fprintf('--- Butterworth Coefficients ---\n'); disp('b:'); disp(bB); disp('a:'); disp(aB);
+fprintf('--- Chebyshev-I Coefficients ---\n'); disp('b:'); disp(bC); disp('a:'); disp(aC);
+fprintf('--- Elliptic Coefficients ---\n');     disp('b:'); disp(bE); disp('a:'); disp(aE);
+
+%% 4. Frequency & Phase Analysis
+N = 4096;
+[HB, f] = freqz(bB, aB, N, Fs);
+[HC, ~] = freqz(bC, aC, N, Fs);
+[HE, ~] = freqz(bE, aE, N, Fs);
+
+MB = 20*log10(abs(HB)+eps);
+MC = 20*log10(abs(HC)+eps);
+ME = 20*log10(abs(HE)+eps);
+
+% Performance Metrics
+P = f <= Fp; S = f >= Fst;
+Ripple_B = max(MB(P)) - min(MB(P)); 
+Ripple_C = max(MC(P)) - min(MC(P)); 
+Ripple_E = max(ME(P)) - min(ME(P));
+
+Stop_B = -max(MB(S)); 
+Stop_C = -max(MC(S)); 
+Stop_E = -max(ME(S));
+
+fprintf('=== PERFORMANCE METRICS ===\n');
+fprintf('Passband Ripple (dB)     -> Butt: %.3f | Cheb: %.3f | Ellip: %.3f\n', Ripple_B, Ripple_C, Ripple_E);
+fprintf('Stopband Attenuation(dB) -> Butt: %.2f | Cheb: %.2f | Ellip: %.2f\n\n', Stop_B, Stop_C, Stop_E);
+
+%% 5. Plotting Results
+% Figure 1: Magnitude Response
+figure('Name', 'Magnitude Response', 'Color', 'white');
+plot(f, MB, 'LineWidth', 1.5); hold on;
+plot(f, MC, 'LineWidth', 1.5);
+plot(f, ME, 'LineWidth', 1.5); grid on;
+xlim([0 250]); ylim([-80 5]);
+xlabel('Frequency (Hz)'); ylabel('Magnitude (dB)');
+title('Comparison of IIR Filter Magnitude Responses');
+legend('Butterworth', 'Chebyshev Type-I', 'Elliptic');
+xline(Fp, '--', 'Fp'); xline(Fst, '--', 'Fst'); hold off;
+
+% Figure 2: Phase Response
+figure('Name', 'Phase Response', 'Color', 'white');
+plot(f, unwrap(angle(HB))*180/pi, 'LineWidth', 1.2); hold on;
+plot(f, unwrap(angle(HC))*180/pi, 'LineWidth', 1.2);
+plot(f, unwrap(angle(HE))*180/pi, 'LineWidth', 1.2); grid on;
+xlim([0 250]);
+xlabel('Frequency (Hz)'); ylabel('Phase (degrees)');
+title('Comparison of IIR Filter Phase Responses');
+legend('Butterworth', 'Chebyshev Type-I', 'Elliptic'); hold off;
+
+% Figure 3: Filter Order Comparison Bar Chart
+figure('Name', 'Filter Orders', 'Color', 'white');
+bar([Nb Nc Ne]); grid on;
+set(gca, 'XTickLabel', {'Butterworth', 'Chebyshev-I', 'Elliptic'});
+ylabel('Filter Order'); title('Comparison of IIR Filter Orders');
