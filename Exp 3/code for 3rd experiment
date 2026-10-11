@@ -1,0 +1,37 @@
+Code 3 for A2D conversion
+
+clear; clc; close all;
+
+% Parameters & Analog Filter Prototype
+Fs = 5000; fc = 1000; T = 1/Fs;
+Om_c = 2 * pi * fc;
+b_a = Om_c; a_a = [1, Om_c];
+
+% 1. Impulse Invariance Method
+[b_imp, a_imp] = impinvar(b_a, a_a, Fs);
+
+% 2. Bilinear Transformation (with Prewarping)
+Om_p = (2/T) * tan(Om_c * T / 2);
+[b_blt, a_blt] = bilinear(Om_p, [1, Om_p], Fs);
+
+% Print Coefficients
+fprintf('=== FILTER DESIGN COMPARISON ===\n');
+fprintf('Impulse Invariance -> b: %s | a: %s\n', mat2str(b_imp), mat2str(a_imp));
+fprintf('Bilinear Trans.    -> b: %s | a: %s\n\n', mat2str(b_blt), mat2str(a_blt));
+
+% Frequency Responses
+[H_imp, f] = freqz(b_imp, a_imp, 1024, Fs);
+[H_blt, ~] = freqz(b_blt, a_blt, 1024, Fs);
+
+% Plotting Responses
+figure('Name', 'Impulse Invariance vs Bilinear', 'Color', 'white');
+
+subplot(2,1,1);
+plot(f, abs(H_imp), 'b', f, abs(H_blt), 'r--', 'LineWidth', 1.5); grid on;
+legend('Impulse Invariance', 'Bilinear (Prewarped)');
+title('Magnitude Response'); xlabel('Frequency (Hz)'); ylabel('Magnitude');
+
+subplot(2,1,2);
+plot(f, angle(H_imp)*180/pi, 'b', f, angle(H_blt)*180/pi, 'r--', 'LineWidth', 1.5); grid on;
+legend('Impulse Invariance', 'Bilinear');
+title('Phase Response'); xlabel('Frequency (Hz)'); ylabel('Phase (Degrees)');
