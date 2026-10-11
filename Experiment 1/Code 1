@@ -1,0 +1,60 @@
+Code for experiment 1
+
+
+clear; clc; close all;
+
+% Design Parameters
+Fs = 8000; % Sampling Frequency in Hz
+
+% Pre-calculated 7th-Order Butterworth Filter Coefficients 
+% LPF Specs: fp=1000 Hz, fs=1500 Hz | HPF Specs: fp=2500 Hz, fs=1800 Hz
+
+% Low-Pass Filter Coefficients (b_lp and a_lp)
+b_lp = [1.551e-5, 1.086e-4, 3.258e-4, 5.430e-4, 3.258e-4, 1.086e-4, 1.551e-5];
+a_lp = [1.0000, -2.5717, 3.1537, -2.2343, 0.9405, -0.2227, 0.0243];
+
+% High-Pass Filter Coefficients (b_hp and a_hp)
+b_hp = [0.1874, -1.3117, 3.9351, -6.5585, 3.9351, -1.3117, 0.1874];
+a_hp = [1.0000, -2.1456, 2.4578, -1.6212, 0.6923, -0.1712, 0.0195];
+
+% Frequency Vector (0 to Fs/2 Hz)
+f = linspace(0, Fs/2, 1024);
+H_lp = zeros(size(f));
+H_hp = zeros(size(f));
+
+% Compute Frequency Responses manually (Base MATLAB loop)
+for k = 1:length(f)
+    w = 2 * pi * f(k) / Fs;
+    n = 0:(length(b_lp)-1);
+    
+    % LPF Response
+    num_lp = sum(b_lp .* exp(-1j * w * n));
+    den_lp = sum(a_lp .* exp(-1j * w * n));
+    H_lp(k) = num_lp / den_lp;
+    
+    % HPF Response
+    num_hp = sum(b_hp .* exp(-1j * w * n));
+    den_hp = sum(a_hp .* exp(-1j * w * n));
+    H_hp(k) = num_hp / den_hp;
+end
+
+% Plotting Responses
+figure('Name', 'Butterworth Filters (Base MATLAB)', 'Color', 'white');
+
+subplot(2,2,1);
+plot(f, 20*log10(abs(H_lp)), 'b', 'LineWidth', 1.5); grid on;
+title('LPF Magnitude (Order N=7)');
+xlabel('Frequency (Hz)'); ylabel('dB'); ylim([-80 5]);
+
+subplot(2,2,2);
+plot(f, angle(H_lp)*180/pi, 'r', 'LineWidth', 1.5); grid on;
+title('LPF Phase'); xlabel('Frequency (Hz)'); ylabel('Degrees');
+
+subplot(2,2,3);
+plot(f, 20*log10(abs(H_hp)), 'b', 'LineWidth', 1.5); grid on;
+title('HPF Magnitude (Order N=7)');
+xlabel('Frequency (Hz)'); ylabel('dB'); ylim([-80 5]);
+
+subplot(2,2,4);
+plot(f, angle(H_hp)*180/pi, 'r', 'LineWidth', 1.5); grid on;
+title('HPF Phase'); xlabel('Frequency (Hz)'); ylabel('Degrees');
