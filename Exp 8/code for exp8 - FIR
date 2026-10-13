@@ -1,11 +1,15 @@
 clc; clear; close all;
-%% FIR FILTER PARAMETERSb = [0.0625 0.2500 0.3750 0.2500 0.0625];
+
+%% FIR FILTER PARAMETERS
+b = [0.0625 0.2500 0.3750 0.2500 0.0625];
 Fs = 1000;
 N = 128;
 x = [1 zeros(1,N-1)];
 n = 0:N-1;
+
 %% 1. DIRECT REALIZATION
 yd = filter(b,1,x);
+
 %% 2. CASCADE REALIZATION
 z = roots(b);
 g = b(1);
@@ -14,6 +18,7 @@ for k = 1:length(z)
 yc = filter([1 -z(k)],1,yc);
 end
 yc = real(yc);
+
 %% 3. SYMMETRY AND LINEAR PHASE
 symErr = max(abs(b-fliplr(b)));
 D = (length(b)-1)/2;
@@ -21,13 +26,16 @@ if symErr < 1e-12
 symmetry = 'Symmetric';
 else
 symmetry = 'Not Symmetric';end
+
 %% 4. FREQUENCY, PHASE AND GROUP DELAY
 [H,w] = freqz(b,1,1024);
 phase = unwrap(angle(H));
 gd = grpdelay(b,1,1024);
+
 %% 5. NUMERICAL COMPARISON
 err = max(abs(yd-yc));
 dev = err/max(abs(yd))*100;
+
 %% =========================================================
 % DISPLAY RESULTS
 % =========================================================
@@ -42,6 +50,7 @@ fprintf('Coefficient Symmetry = %s\n',symmetry);
 fprintf('Symmetry Error = %.3e\n',symErr);
 fprintf('Group Delay = %.2f samples\n',D);fprintf('\nMaximum Error = %.3e\n',err);
 fprintf('Percentage Deviation = %.3e %%\n',dev);
+
 %% =========================================================
 % IMPULSE RESPONSE VALUES
 % =========================================================
@@ -53,6 +62,7 @@ for k = 1:10
 fprintf('%4d %10.6f %10.6f\n', ...
 n(k),yd(k),yc(k));
 end
+
 %% =========================================================
 % CASCADE ZEROS
 % =========================================================
@@ -60,7 +70,9 @@ fprintf('\n============================================\n');
 fprintf('CASCADE REALIZATION ZEROS\n');
 fprintf('============================================\n');
 disp(z);
-%% =========================================================% OUTPUT PARAMETER TABLE
+
+%% =========================================================
+% OUTPUT PARAMETER TABLE
 % =========================================================
 Parameter = {
 'Direct realization output'
@@ -84,7 +96,8 @@ sprintf('Group delay = %.2f samples',D)
 sprintf('Max error = %.3e; Deviation = %.3e %%',err,dev)
 };
 Unit_Note = {
-'Amplitude''Amplitude'
+'Amplitude'
+'Amplitude'
 'h[n]'
 'Samples'
 'Numerical precision'
@@ -94,6 +107,7 @@ fprintf('\n============================================\n');
 fprintf('OUTPUT PARAMETER TABLE\n');
 fprintf('============================================\n');
 disp(Output_Table);
+
 %% =========================================================
 % GRAPH 1: DIRECT VS CASCADE IMPULSE RESPONSE
 % =========================================================
@@ -105,6 +119,7 @@ grid on;
 xlabel('Sample n');
 ylabel('Amplitude');title('Direct and Cascade FIR Impulse Responses');
 legend('Direct Realization','Cascade Realization');
+
 %% =========================================================
 % GRAPH 2: MAGNITUDE RESPONSE
 % =========================================================
@@ -114,6 +129,7 @@ grid on;
 xlabel('Normalized Frequency (\times\pi rad/sample)');
 ylabel('|H(e^{j\omega})|');
 title('FIR Magnitude Response');
+
 %% =========================================================
 % GRAPH 3: PHASE RESPONSE
 % =========================================================
@@ -122,6 +138,7 @@ plot(w/pi,phase,'LineWidth',1.5);
 grid on;xlabel('Normalized Frequency (\times\pi rad/sample)');
 ylabel('Phase (radians)');
 title('Unwrapped Phase Response');
+
 %% =========================================================
 % GRAPH 4: GROUP DELAY
 % =========================================================
@@ -131,6 +148,7 @@ grid on;
 xlabel('Normalized Frequency (\times\pi rad/sample)');
 ylabel('Group Delay (samples)');
 title('Group Delay');
+
 %% =========================================================
 % GRAPH 5: NUMERICAL ERROR
 % =========================================================
@@ -139,6 +157,7 @@ plot(n,abs(yd-yc),'LineWidth',1.5);
 grid on;xlabel('Sample n');
 ylabel('Absolute Error');
 title('Direct vs Cascade Numerical Error');
+
 %% =========================================================
 % FINAL RESULT
 % =========================================================
@@ -152,36 +171,38 @@ fprintf('4. Linear-phase group delay = %.2f samples.\n',D);
 fprintf('5. Maximum realization error = %.3e.\n',err);
 fprintf('6. Percentage deviation = %.3e %%.\n',dev);
 fprintf('7. Direct and Cascade responses are equivalent.\n');
-output
-============================================
-FIR FILTER REALIZATION RESULTS
-============================================
-FIR Coefficients:
-0.0625 0.2500 0.3750 0.2500 0.0625
-Sampling Frequency = 1000 Hz
-Number of Samples = 128Coefficient Symmetry = Symmetric
-Symmetry Error = 0.000e+00
-Group Delay = 2.00 samples
-Maximum Error = 8.327e-16
-Percentage Deviation = 2.220e-13 %
-============================================
-FIRST 10 IMPULSE RESPONSE VALUES
-============================================
-n Direct Cascade
-0 0.062500 0.062500
-1 0.250000 0.250000
-2 0.375000 0.375000
-3 0.250000 0.250000
-4 0.062500 0.062500
-5 0.000000 0.000000
-6 0.000000 0.000000
-7 0.000000 0.000000
-8 0.000000 0.000000
-9 0.000000 0.000000
-============================================
-CASCADE REALIZATION ZEROS
-============================================
--1.0002 + 0.0000i
--1.0000 + 0.0002i
--1.0000 - 0.0002i
--0.9998 + 0.0000i
+
+% output
+% ============================================
+% FIR FILTER REALIZATION RESULTS
+% ============================================
+% FIR Coefficients:
+% 0.0625 0.2500 0.3750 0.2500 0.0625
+% Sampling Frequency = 1000 Hz
+% Number of Samples = 128
+% Coefficient Symmetry = Symmetric
+% Symmetry Error = 0.000e+00
+% Group Delay = 2.00 samples
+% Maximum Error = 8.327e-16
+% Percentage Deviation = 2.220e-13 %
+% ============================================
+% FIRST 10 IMPULSE RESPONSE VALUES
+% ============================================
+% n Direct Cascade
+% 0 0.062500 0.062500
+% 1 0.250000 0.250000
+% 2 0.375000 0.375000
+% 3 0.250000 0.250000
+% 4 0.062500 0.062500
+% 5 0.000000 0.000000
+% 6 0.000000 0.000000
+% 7 0.000000 0.000000
+% 8 0.000000 0.000000
+% 9 0.000000 0.000000
+% ============================================
+% CASCADE REALIZATION ZEROS
+% ============================================
+% -1.0002 + 0.0000i
+% -1.0000 + 0.0002i
+% -1.0000 - 0.0002i
+% -0.9998 + 0.0000i
